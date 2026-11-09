@@ -2,10 +2,10 @@ package br.com.isaconstance.bemi.domain
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import br.com.isaconstance.bemi.domain.model.Aviso
+import br.com.isaconstance.bemi.domain.model.TipoAviso
 import br.com.isaconstance.bemi.domain.model.Consulta
 import br.com.isaconstance.bemi.domain.model.Documento
-import br.com.isaconstance.bemi.ui.screens.avisos.AvisoItem
-import br.com.isaconstance.bemi.ui.screens.avisos.TipoAviso
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -15,12 +15,13 @@ object GeradorDeAvisos {
     fun gerarAvisos(
         consultas: List<Consulta>,
         documentos: List<Documento>
-    ): List<AvisoItem> {
+    ): List<Aviso> {
 
-        val avisos = mutableListOf<AvisoItem>()
+        val avisos = mutableListOf<Aviso>()
 
         consultas.forEach { consulta ->
             val dataConsulta = LocalDate.parse(consulta.data)
+
             val diasRestantes = ChronoUnit.DAYS.between(
                 LocalDate.now(),
                 dataConsulta
@@ -28,7 +29,7 @@ object GeradorDeAvisos {
 
             if (diasRestantes in 0..7) {
                 avisos.add(
-                    AvisoItem(
+                    Aviso(
                         id = consulta.id,
                         titulo = "Consulta próxima",
                         descricao = "Você tem consulta de ${consulta.especialidade} em ${consulta.data}.",
@@ -40,8 +41,10 @@ object GeradorDeAvisos {
         }
 
         documentos.forEach { documento ->
+
             if (!documento.validade.isNullOrBlank()) {
                 val validade = LocalDate.parse(documento.validade)
+
                 val diasRestantes = ChronoUnit.DAYS.between(
                     LocalDate.now(),
                     validade
@@ -49,7 +52,7 @@ object GeradorDeAvisos {
 
                 if (diasRestantes in 0..30) {
                     avisos.add(
-                        AvisoItem(
+                        Aviso(
                             id = 1000 + documento.id,
                             titulo = "Documento próximo do vencimento",
                             descricao = "O documento ${documento.tipo} está próximo do vencimento.",
@@ -62,7 +65,7 @@ object GeradorDeAvisos {
 
             if (documento.status.equals("Pendente", ignoreCase = true)) {
                 avisos.add(
-                    AvisoItem(
+                    Aviso(
                         id = 2000 + documento.id,
                         titulo = "Documento pendente",
                         descricao = "O documento ${documento.tipo} precisa de atenção.",

@@ -2,6 +2,7 @@ package br.com.isaconstance.bemi.ui.screens.consultas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,6 +39,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.tooling.preview.Preview
 import br.com.isaconstance.bemi.domain.model.Consulta
 import br.com.isaconstance.bemi.domain.model.Endereco
+import br.com.isaconstance.bemi.ui.components.BemiHeader
+import br.com.isaconstance.bemi.ui.components.BemiLoading
 import br.com.isaconstance.bemi.ui.theme.BemiColors
 import br.com.isaconstance.bemi.ui.theme.BemiTheme
 
@@ -55,6 +58,7 @@ fun ConsultasScreen(
     )
 }
 
+
 @Composable
 private fun ConsultasContent(
     estado: ConsultaUiState,
@@ -68,107 +72,89 @@ private fun ConsultasContent(
             .statusBarsPadding()
             .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = onVoltarInicio
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "Voltar para início",
-                    tint = BemiColors.VerdeEscuro
-                )
-            }
-
-            Text(
-                text = "Minhas consultas",
-                fontSize = 27.sp,
-                fontWeight = FontWeight.Bold,
-                color = BemiColors.VerdeEscuro
-            )
-        }
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Text(
-            text = "Acompanhe seus próximos atendimentos.",
-            fontSize = 16.sp,
-            color = BemiColors.TextoSecundario
+        BemiHeader(
+            titulo = "Minhas consultas",
+            subtitulo = "Acompanhe seus próximos atendimentos.",
+            onVoltar = onVoltarInicio
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(22.dp))
 
-        when (estado) {
-            is ConsultaUiState.Inicial,
-            is ConsultaUiState.Carregando -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 48.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator(
-                        color = BemiColors.Verde
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Carregando suas consultas...",
-                        color = BemiColors.TextoSecundario,
-                        fontSize = 16.sp
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            when (estado) {
+                is ConsultaUiState.Inicial,
+                is ConsultaUiState.Carregando -> {
+                    BemiLoading(
+                        mensagem = "Carregando consultas..."
                     )
                 }
-            }
 
-            is ConsultaUiState.Sucesso -> {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(
-                        items = estado.consultas,
-                        key = { it.id }
-                    ) { consulta ->
-                        ConsultaCard(consulta)
+                is ConsultaUiState.Sucesso -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(
+                            items = estado.consultas,
+                            key = { it.id }
+                        ) { consulta ->
+                            ConsultaCard(consulta)
+                        }
                     }
                 }
-            }
 
-            is ConsultaUiState.Vazio -> {
-                Text(
-                    text = "Nenhuma consulta cadastrada.",
-                    fontSize = 17.sp,
-                    color = BemiColors.TextoSecundario
-                )
-            }
-
-            is ConsultaUiState.Erro -> {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "Não conseguimos carregar suas consultas.",
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = BemiColors.TextoPrincipal
-                    )
-
-                    Text(
-                        text = estado.mensagem,
-                        fontSize = 14.sp,
-                        color = BemiColors.TextoSecundario
-                    )
-
-                    Button(
-                        onClick = onTentarNovamente
+                is ConsultaUiState.Vazio -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text("Tentar novamente")
+                        Text(
+                            text = "Nenhuma consulta cadastrada.",
+                            fontSize = 17.sp,
+                            color = BemiColors.TextoSecundario
+                        )
+                    }
+                }
+
+                is ConsultaUiState.Erro -> {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Não conseguimos carregar suas consultas.",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = BemiColors.TextoPrincipal
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = estado.mensagem,
+                            fontSize = 14.sp,
+                            color = BemiColors.TextoSecundario
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Button(
+                            onClick = onTentarNovamente
+                        ) {
+                            Text("Tentar novamente")
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 @Composable
 private fun ConsultaCard(consulta: Consulta) {

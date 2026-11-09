@@ -1,25 +1,12 @@
 package br.com.isaconstance.bemi.ui.screens.avisos
 
-data class AvisoItem(
-    val id: Int,
-    val titulo: String,
-    val descricao: String,
-    val detalhes: String,
-    val tipo: TipoAviso,
-    val lido: Boolean = false
-)
-
-enum class TipoAviso{
-    CONSULTA,
-    DOCUMENTO,
-    SEGURANCA
-}
+import br.com.isaconstance.bemi.domain.model.Aviso
 
 sealed interface AvisosUiState {
     data object Carregando : AvisosUiState
 
     data class Sucesso(
-        val avisos: List<AvisoItem>
+        val avisos: List<Aviso>
     ) : AvisosUiState
 
     data object Vazio : AvisosUiState

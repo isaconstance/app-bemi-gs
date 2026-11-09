@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import br.com.isaconstance.bemi.data.repository.ConsultaRepository
 import br.com.isaconstance.bemi.data.repository.DocumentoRepository
 import br.com.isaconstance.bemi.domain.GeradorDeAvisos
+import br.com.isaconstance.bemi.domain.model.Aviso
+import br.com.isaconstance.bemi.domain.model.TipoAviso
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +55,7 @@ class AvisosViewModel : ViewModel() {
                         documentos = documentos
                     )
 
-                    val avisoSeguranca = AvisoItem(
+                    val avisoSeguranca = Aviso(
                         id = -1,
                         titulo = "Cuidado com golpes!",
                         descricao = "Nunca compartilhe senhas ou códigos recebidos por mensagem.",

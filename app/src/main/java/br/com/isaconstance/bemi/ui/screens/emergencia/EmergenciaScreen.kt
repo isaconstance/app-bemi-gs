@@ -14,6 +14,8 @@ import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.com.isaconstance.bemi.ui.components.BemiHeader
 import br.com.isaconstance.bemi.ui.theme.BemiColors
 
 private val VermelhoEmergencia = Color(0xFFD9362B)
@@ -28,8 +31,10 @@ private val FundoAviso = Color(0xFFFBE5E2)
 
 @Composable
 fun EmergenciaScreen(
+    viewModel: EmergenciaViewModel,
     onVoltarInicio: () -> Unit
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
     fun ligar(numero: String) {
@@ -47,24 +52,10 @@ fun EmergenciaScreen(
             .statusBarsPadding()
             .padding(horizontal = 20.dp, vertical = 18.dp)
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onVoltarInicio) {
-                Icon(
-                    Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "Voltar",
-                    tint = BemiColors.VerdeEscuro
-                )
-            }
-
-            Text(
-                text = "Emergência",
-                fontSize = 25.sp,
-                fontWeight = FontWeight.Bold,
-                color = BemiColors.VerdeEscuro
-            )
-        }
+        BemiHeader(
+            titulo = "Minha conta",
+            onVoltar = onVoltarInicio
+        )
 
         Spacer(modifier = Modifier.height(18.dp))
 
@@ -108,19 +99,41 @@ fun EmergenciaScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        ContatoEmergencia(
-            nome = "Ana (Filha)",
-            telefone = "(11) 98765-4321",
-            onLigar = { ligar("11987654321") }
-        )
+        when {
+            uiState.carregando -> {
+                CircularProgressIndicator(
+                    color = BemiColors.VerdeEscuro
+                )
+            }
 
-        Spacer(modifier = Modifier.height(10.dp))
+            uiState.erro != null -> {
+                Text(
+                    text = uiState.erro ?: "Erro ao carregar contatos.",
+                    color = VermelhoEmergencia,
+                    fontSize = 14.sp
+                )
+            }
 
-        ContatoEmergencia(
-            nome = "Carlos (Neto)",
-            telefone = "(11) 91234-5678",
-            onLigar = { ligar("11912345678") }
-        )
+            uiState.contatos.isEmpty() -> {
+                Text(
+                    text = "Nenhum contato cadastrado ainda.",
+                    fontSize = 14.sp,
+                    color = BemiColors.TextoSecundario
+                )
+            }
+
+            else -> {
+                uiState.contatos.forEach { contato ->
+                    ContatoEmergencia(
+                        nome = contato.nome,
+                        telefone = contato.telefone,
+                        onLigar = { ligar(contato.telefone.filter { it.isDigit() }) }
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(26.dp))
 

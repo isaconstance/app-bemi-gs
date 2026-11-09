@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.isaconstance.bemi.domain.model.Documento
+import br.com.isaconstance.bemi.ui.components.BemiHeader
+import br.com.isaconstance.bemi.ui.components.BemiLoading
 import br.com.isaconstance.bemi.ui.theme.BemiColors
 import br.com.isaconstance.bemi.ui.theme.BemiTheme
 
@@ -40,6 +42,7 @@ fun DocumentosScreen(
     )
 }
 
+
 @Composable
 private fun DocumentosContent(
     estado: DocumentoUiState,
@@ -55,61 +58,36 @@ private fun DocumentosContent(
             .statusBarsPadding()
             .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onVoltarInicio) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "Voltar para início",
-                    tint = BemiColors.VerdeEscuro
-                )
-            }
-
-            Text(
-                text = "Meus documentos",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = BemiColors.VerdeEscuro
-            )
-        }
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Text(
-            text = "Tenha seus documentos sempre organizados.",
-            fontSize = 16.sp,
-            color = BemiColors.TextoSecundario
+        BemiHeader(
+            titulo = "Meus documentos",
+            subtitulo = "Tenha seus documentos sempre organizados.",
+            onVoltar = onVoltarInicio
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(22.dp))
 
-        when (estado) {
-            DocumentoUiState.Inicial,
-            DocumentoUiState.Carregando -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(color = BemiColors.Verde)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = "Carregando documentos...",
-                            color = BemiColors.TextoSecundario,
-                            fontSize = 16.sp
-                        )
-                    }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            when (estado) {
+
+                DocumentoUiState.Inicial,
+                DocumentoUiState.Carregando -> {
+                    BemiLoading(
+                        mensagem = "Carregando documentos..."
+                    )
                 }
-            }
 
-            is DocumentoUiState.Erro -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                is DocumentoUiState.Erro -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
                         Icon(
                             imageVector = Icons.Outlined.ErrorOutline,
                             contentDescription = null,
@@ -146,127 +124,140 @@ private fun DocumentosContent(
                                 imageVector = Icons.Outlined.Refresh,
                                 contentDescription = null
                             )
+
                             Spacer(modifier = Modifier.width(8.dp))
+
                             Text("Tentar novamente")
                         }
                     }
                 }
-            }
 
-            DocumentoUiState.Vazio -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Nenhum documento cadastrado ainda.",
-                        fontSize = 17.sp,
-                        color = BemiColors.TextoSecundario
-                    )
-                }
-            }
-
-            is DocumentoUiState.Sucesso -> {
-                val documentos = estado.documentos
-                val pendencias = documentos.filter {
-                    !it.status.equals("OK", ignoreCase = true)
-                }
-
-                val documentosExibidos = if (mostrarPendencias) {
-                    pendencias
-                } else {
-                    documentos
-                }
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = BemiColors.VerdeClaro
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier.padding(18.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                DocumentoUiState.Vazio -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Description,
-                            contentDescription = null,
-                            tint = BemiColors.VerdeEscuro,
-                            modifier = Modifier.size(32.dp)
+                        Text(
+                            text = "Nenhum documento cadastrado ainda.",
+                            fontSize = 17.sp,
+                            color = BemiColors.TextoSecundario
                         )
-
-                        Spacer(modifier = Modifier.width(14.dp))
-
-                        Column {
-                            Text(
-                                text = "${documentos.size} documentos cadastrados",
-                                fontSize = 17.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = BemiColors.VerdeEscuro
-                            )
-
-                            Text(
-                                text = if (pendencias.isEmpty()) {
-                                    "Todos estão em situação regular."
-                                } else {
-                                    "${pendencias.size} documento(s) precisam de atenção."
-                                },
-                                fontSize = 14.sp,
-                                color = BemiColors.TextoSecundario
-                            )
-                        }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                is DocumentoUiState.Sucesso -> {
+                    val documentos = estado.documentos
 
-                OutlinedButton(
-                    onClick = { mostrarPendencias = !mostrarPendencias },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = BemiColors.VerdeEscuro
-                    )
-                ) {
-                    Text(
-                        text = if (mostrarPendencias) {
-                            "Ver todos os documentos"
-                        } else {
-                            "Ver pendências (${pendencias.size})"
-                        },
-                        fontSize = 16.sp
-                    )
-                }
+                    val pendencias = documentos.filter {
+                        !it.status.equals("OK", ignoreCase = true)
+                    }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    val documentosExibidos = if (mostrarPendencias) {
+                        pendencias
+                    } else {
+                        documentos
+                    }
 
-                Text(
-                    text = if (mostrarPendencias) "Documentos pendentes" else "Seus documentos",
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = BemiColors.VerdeEscuro
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                if (documentosExibidos.isEmpty()) {
-                    Text(
-                        text = "Nenhuma pendência encontrada. Tudo certo!",
-                        fontSize = 16.sp,
-                        color = BemiColors.TextoSecundario,
-                        modifier = Modifier.padding(vertical = 20.dp)
-                    )
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    Column(
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        items(
-                            items = documentosExibidos,
-                            key = { it.id }
-                        ) { documento ->
-                            DocumentoCard(documento = documento)
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(18.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = BemiColors.VerdeClaro
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(18.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Description,
+                                    contentDescription = null,
+                                    tint = BemiColors.VerdeEscuro,
+                                    modifier = Modifier.size(32.dp)
+                                )
+
+                                Spacer(modifier = Modifier.width(14.dp))
+
+                                Column {
+                                    Text(
+                                        text = "${documentos.size} documentos cadastrados",
+                                        fontSize = 17.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = BemiColors.VerdeEscuro
+                                    )
+
+                                    Text(
+                                        text = if (pendencias.isEmpty()) {
+                                            "Todos estão em situação regular."
+                                        } else {
+                                            "${pendencias.size} documento(s) precisam de atenção."
+                                        },
+                                        fontSize = 14.sp,
+                                        color = BemiColors.TextoSecundario
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(18.dp))
+
+                        OutlinedButton(
+                            onClick = {
+                                mostrarPendencias = !mostrarPendencias
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = BemiColors.VerdeEscuro
+                            )
+                        ) {
+                            Text(
+                                text = if (mostrarPendencias) {
+                                    "Ver todos os documentos"
+                                } else {
+                                    "Ver pendências (${pendencias.size})"
+                                },
+                                fontSize = 16.sp
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = if (mostrarPendencias) {
+                                "Documentos pendentes"
+                            } else {
+                                "Seus documentos"
+                            },
+                            fontSize = 19.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BemiColors.VerdeEscuro
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        if (documentosExibidos.isEmpty()) {
+                            Text(
+                                text = "Nenhuma pendência encontrada. Tudo certo!",
+                                fontSize = 16.sp,
+                                color = BemiColors.TextoSecundario,
+                                modifier = Modifier.padding(vertical = 20.dp)
+                            )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(
+                                    items = documentosExibidos,
+                                    key = { it.id }
+                                ) { documento ->
+                                    DocumentoCard(documento = documento)
+                                }
+                            }
                         }
                     }
                 }
@@ -274,6 +265,7 @@ private fun DocumentosContent(
         }
     }
 }
+
 
 @Composable
 private fun DocumentoCard(documento: Documento) {

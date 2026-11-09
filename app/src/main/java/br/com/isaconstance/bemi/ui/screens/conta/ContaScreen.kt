@@ -1,4 +1,4 @@
-package br.com.isaconstance.bemi.ui.conta
+package br.com.isaconstance.bemi.ui.screens.conta
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -21,9 +21,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
+import br.com.isaconstance.bemi.ui.components.BemiHeader
 import br.com.isaconstance.bemi.ui.theme.BemiColors
-import br.com.isaconstance.bemi.ui.theme.BemiTheme
 
 @Composable
 fun ContaScreen(
@@ -39,24 +38,10 @@ fun ContaScreen(
             .padding(horizontal = 20.dp, vertical = 22.dp)
     ) {
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onVoltarInicio) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "Voltar",
-                    tint = BemiColors.VerdeEscuro
-                )
-            }
-
-            Text(
-                text = "Minha conta",
-                fontSize = 27.sp,
-                fontWeight = FontWeight.Bold,
-                color = BemiColors.VerdeEscuro
-            )
-        }
+        BemiHeader(
+            titulo = "Minha conta",
+            onVoltar = onVoltarInicio
+        )
 
         Spacer(modifier = Modifier.height(22.dp))
 

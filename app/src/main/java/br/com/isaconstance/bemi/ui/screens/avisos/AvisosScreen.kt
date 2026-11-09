@@ -25,6 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.tooling.preview.Preview
+import br.com.isaconstance.bemi.domain.model.Aviso
+import br.com.isaconstance.bemi.domain.model.TipoAviso
+import br.com.isaconstance.bemi.ui.components.BemiHeader
+import br.com.isaconstance.bemi.ui.components.BemiLoading
 import br.com.isaconstance.bemi.ui.theme.BemiColors
 import br.com.isaconstance.bemi.ui.theme.BemiTheme
 
@@ -44,6 +48,7 @@ fun AvisosScreen(
     )
 }
 
+
 @Composable
 private fun AvisosContent(
     estado: AvisosUiState,
@@ -56,141 +61,135 @@ private fun AvisosContent(
             .fillMaxSize()
             .background(BemiColors.Bege)
             .statusBarsPadding()
-            .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp, vertical = 20.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(
-                onClick = onVoltarInicio
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "Voltar",
-                    tint = BemiColors.VerdeEscuro
-                )
-            }
-
-            Text(
-                text = "Meus avisos",
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                color = BemiColors.VerdeEscuro
-            )
-        }
-
-        Spacer(modifier = Modifier.height(5.dp))
-
-        Text(
-            text = "Fique por dentro de informações importantes.",
-            fontSize = 16.sp,
-            color = BemiColors.TextoSecundario
+        BemiHeader(
+            titulo = "Meus avisos",
+            subtitulo = "Fique por dentro de informações importantes.",
+            onVoltar = onVoltarInicio
         )
 
         Spacer(modifier = Modifier.height(22.dp))
 
-        when (estado) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            when (estado) {
 
-            AvisosUiState.Carregando -> {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    color = BemiColors.Verde
-                )
-            }
-
-            AvisosUiState.Vazio -> {
-                Text(
-                    text = "Você não tem avisos no momento.",
-                    fontSize = 17.sp,
-                    color = BemiColors.TextoSecundario
-                )
-            }
-
-            is AvisosUiState.Sucesso -> {
-                val naoLidos = estado.avisos.count { !it.lido }
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = BemiColors.VerdeClaro
+                AvisosUiState.Carregando -> {
+                    BemiLoading(
+                        mensagem = "Carregando avisos..."
                     )
-                ) {
-                    Row(
-                        modifier = Modifier.padding(18.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                }
+
+                AvisosUiState.Vazio -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            Icons.Outlined.Notifications,
-                            contentDescription = null,
-                            tint = BemiColors.VerdeEscuro,
-                            modifier = Modifier.size(30.dp)
+                        Text(
+                            text = "Você não tem avisos no momento.",
+                            fontSize = 17.sp,
+                            color = BemiColors.TextoSecundario
                         )
+                    }
+                }
 
-                        Spacer(modifier = Modifier.width(12.dp))
+                is AvisosUiState.Sucesso -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        val naoLidos = estado.avisos.count { !it.lido }
 
-                        Column {
-                            Text(
-                                text = "$naoLidos avisos não lidos",
-                                fontSize = 17.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = BemiColors.VerdeEscuro
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = BemiColors.VerdeClaro
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(18.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Outlined.Notifications,
+                                    contentDescription = null,
+                                    tint = BemiColors.VerdeEscuro,
+                                    modifier = Modifier.size(30.dp)
+                                )
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Column {
+                                    Text(
+                                        text = "$naoLidos avisos não lidos",
+                                        fontSize = 17.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = BemiColors.VerdeEscuro
+                                    )
+
+                                    Text(
+                                        text = "Confira os lembretes abaixo.",
+                                        fontSize = 14.sp,
+                                        color = BemiColors.TextoPrincipal
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        estado.avisos.forEach { aviso ->
+                            AvisoCard(
+                                aviso = aviso,
+                                onMarcarComoLido = {
+                                    onMarcarComoLido(aviso.id)
+                                }
                             )
 
-                            Text(
-                                text = "Confira os lembretes abaixo.",
-                                fontSize = 14.sp,
-                                color = BemiColors.TextoPrincipal
-                            )
+                            Spacer(modifier = Modifier.height(13.dp))
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                estado.avisos.forEach { aviso ->
-                    AvisoCard(
-                        aviso = aviso,
-                        onMarcarComoLido = {
-                            onMarcarComoLido(aviso.id)
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(13.dp))
-                }
-            }
-
-            is AvisosUiState.Erro -> {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Não foi possível carregar seus avisos.",
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = BemiColors.TextoPrincipal
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Text(
-                        text = estado.mensagem,
-                        fontSize = 14.sp,
-                        color = BemiColors.TextoSecundario
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = onTentarNovamente,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = BemiColors.Verde
-                        )
+                is AvisosUiState.Erro -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Text("Tentar novamente")
+                        Text(
+                            text = "Não foi possível carregar seus avisos.",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BemiColors.TextoPrincipal
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = estado.mensagem,
+                            fontSize = 14.sp,
+                            color = BemiColors.TextoSecundario
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = onTentarNovamente,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = BemiColors.Verde
+                            )
+                        ) {
+                            Text("Tentar novamente")
+                        }
                     }
                 }
             }
@@ -200,7 +199,7 @@ private fun AvisosContent(
 
 @Composable
 private fun AvisoCard(
-    aviso: AvisoItem,
+    aviso: Aviso,
     onMarcarComoLido: () -> Unit
 ) {
     var expandido by remember { mutableStateOf(false) }
@@ -326,39 +325,3 @@ private fun AvisoCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun AvisosScreenPreview() {
-    BemiTheme {
-        AvisosContent(
-            estado = AvisosUiState.Sucesso(
-                listOf(
-                    AvisoItem(
-                        1,
-                        "Consulta amanhã",
-                        "Você tem uma consulta de Cardiologia às 14:30.",
-                        "Local: Clínica Vida. Rua das Flores, 120. Não esqueça seus exames anteriores.",
-                        TipoAviso.CONSULTA
-                    ),
-                    AvisoItem(
-                        2,
-                        "Confira seus documentos",
-                        "Acesse seus documentos para conferir a situação.",
-                        "Verifique a validade dos documentos antes dos atendimentos.",
-                        TipoAviso.DOCUMENTO
-                    ),
-                    AvisoItem(
-                        3,
-                        "Cuidado com golpes!",
-                        "Nunca compartilhe senhas ou códigos.",
-                        "Desconfie de ligações que pedem transferências ou dados pessoais.",
-                        TipoAviso.SEGURANCA
-                    )
-                )
-            ),
-            onMarcarComoLido = {},
-            onVoltarInicio = {},
-            onTentarNovamente = {}
-        )
-    }
-}

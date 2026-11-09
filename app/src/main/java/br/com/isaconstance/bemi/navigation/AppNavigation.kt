@@ -4,15 +4,17 @@ import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import br.com.isaconstance.bemi.data.local.UserPreferences
-import br.com.isaconstance.bemi.ui.conta.ContaScreen
+import br.com.isaconstance.bemi.ui.screens.conta.ContaScreen
 import br.com.isaconstance.bemi.ui.screens.avisos.AvisosScreen
 import br.com.isaconstance.bemi.ui.screens.consultas.ConsultasScreen
 import br.com.isaconstance.bemi.ui.screens.documentos.DocumentosScreen
 import br.com.isaconstance.bemi.ui.screens.emergencia.EmergenciaScreen
+import br.com.isaconstance.bemi.ui.screens.emergencia.EmergenciaViewModel
 import br.com.isaconstance.bemi.ui.screens.home.HomeScreen
 import br.com.isaconstance.bemi.ui.screens.intro.IntroScreen
 import br.com.isaconstance.bemi.ui.screens.splash.SplashScreen
@@ -23,7 +25,16 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
     val prefs = remember { UserPreferences(context) }
-
+    val emergenciaViewModel: EmergenciaViewModel = viewModel(
+        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(
+                modelClass: Class<T>
+            ): T {
+                @Suppress("UNCHECKED_CAST")
+                return EmergenciaViewModel(context.applicationContext) as T
+            }
+        }
+    )
     NavHost(
         navController = navController,
         startDestination = Routes.SPLASH
@@ -112,6 +123,7 @@ fun AppNavigation() {
 
         composable(Routes.EMERGENCIA) {
             EmergenciaScreen(
+                viewModel = emergenciaViewModel,
                 onVoltarInicio = {
                     navController.popBackStack()
                 }
