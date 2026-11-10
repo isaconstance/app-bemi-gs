@@ -2,6 +2,9 @@ package br.com.isaconstance.bemi.navigation
 
 import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -9,14 +12,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import br.com.isaconstance.bemi.data.local.UserPreferences
+import br.com.isaconstance.bemi.ui.screens.acesso.AcessoScreen
 import br.com.isaconstance.bemi.ui.screens.conta.ContaScreen
 import br.com.isaconstance.bemi.ui.screens.avisos.AvisosScreen
+import br.com.isaconstance.bemi.ui.screens.cadastro.CadastroScreen
+import br.com.isaconstance.bemi.ui.screens.cadastro.EstadoUsuario
+import br.com.isaconstance.bemi.ui.screens.cadastro.UsuarioViewModel
+import br.com.isaconstance.bemi.ui.screens.cadastro.UsuarioViewModelFactory
 import br.com.isaconstance.bemi.ui.screens.consultas.ConsultasScreen
 import br.com.isaconstance.bemi.ui.screens.documentos.DocumentosScreen
 import br.com.isaconstance.bemi.ui.screens.emergencia.EmergenciaScreen
 import br.com.isaconstance.bemi.ui.screens.emergencia.EmergenciaViewModel
 import br.com.isaconstance.bemi.ui.screens.home.HomeScreen
 import br.com.isaconstance.bemi.ui.screens.intro.IntroScreen
+import br.com.isaconstance.bemi.ui.screens.login.LoginScreen
 import br.com.isaconstance.bemi.ui.screens.splash.SplashScreen
 
 @Composable
@@ -25,6 +34,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
     val prefs = remember { UserPreferences(context) }
+
     val emergenciaViewModel: EmergenciaViewModel = viewModel(
         factory = object : androidx.lifecycle.ViewModelProvider.Factory {
             override fun <T : androidx.lifecycle.ViewModel> create(
@@ -35,6 +45,61 @@ fun AppNavigation() {
             }
         }
     )
+
+    val usuarioViewModel: UsuarioViewModel = viewModel(
+        factory = UsuarioViewModelFactory(context.applicationContext)
+    )
+
+    val estadoUsuario by usuarioViewModel.estado.collectAsState()
+
+    // Verifica se o usuário está logado antes de abrir áreas protegidas.
+    fun abrirAreaProtegida(rota: String) {
+        if (prefs.estaLogado()) {
+            navController.navigate(rota)
+        } else {
+            Toast.makeText(
+                context,
+                "Entre ou crie sua conta para acessar esta área.",
+                Toast.LENGTH_LONG
+            ).show()
+
+            navController.navigate(Routes.LOGIN)
+        }
+    }
+
+    LaunchedEffect(estadoUsuario) {
+        when (val estado = estadoUsuario) {
+
+            is EstadoUsuario.Sucesso -> {
+                Toast.makeText(
+                    context,
+                    "Bem-vindo(a), ${estado.nome}!",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                prefs.salvarUsuario(estado.nome)
+
+                navController.navigate(Routes.HOME) {
+                    launchSingleTop = true
+                }
+
+                usuarioViewModel.limparEstado()
+            }
+
+            is EstadoUsuario.Erro -> {
+                Toast.makeText(
+                    context,
+                    estado.mensagem,
+                    Toast.LENGTH_LONG
+                ).show()
+
+                usuarioViewModel.limparEstado()
+            }
+
+            else -> Unit
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = Routes.SPLASH
@@ -43,10 +108,10 @@ fun AppNavigation() {
         composable(Routes.SPLASH) {
             SplashScreen(
                 onTimeout = {
-                    val destino = if (prefs.introVista()) {
-                        Routes.HOME
-                    } else {
-                        Routes.INTRO
+                    val destino = when {
+                        prefs.estaLogado() -> Routes.HOME
+                        prefs.introVista() -> Routes.ACESSO
+                        else -> Routes.INTRO
                     }
 
                     navController.navigate(destino) {
@@ -63,7 +128,7 @@ fun AppNavigation() {
                 onFinish = {
                     prefs.marcarIntroVista()
 
-                    navController.navigate(Routes.HOME) {
+                    navController.navigate(Routes.ACESSO) {
                         popUpTo(Routes.INTRO) {
                             inclusive = true
                         }
@@ -72,20 +137,72 @@ fun AppNavigation() {
             )
         }
 
+        composable(Routes.ACESSO) {
+            AcessoScreen(
+                onEntrar = {
+                    navController.navigate(Routes.LOGIN)
+                },
+                onCadastrar = {
+                    navController.navigate(Routes.CADASTRO)
+                },
+                onContinuarVisitante = {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.ACESSO) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
+        composable(Routes.LOGIN) {
+            LoginScreen(
+                onVoltar = {
+                    navController.popBackStack()
+                },
+                onEntrar = { email, senha ->
+                    usuarioViewModel.entrar(email, senha)
+                },
+                onCadastrar = {
+                    navController.navigate(Routes.CADASTRO)
+                }
+            )
+        }
+
+        composable(Routes.CADASTRO) {
+            CadastroScreen(
+                onVoltar = {
+                    navController.popBackStack()
+                },
+                onCadastrar = { nome, email, senha ->
+                    usuarioViewModel.cadastrar(nome, email, senha)
+                },
+                onIrLogin = {
+                    navController.navigate(Routes.LOGIN)
+                }
+            )
+        }
+
         composable(Routes.HOME) {
             HomeScreen(
+                nomeUsuario = prefs.nomeUsuario(),
+
                 onAbrirDocumentos = {
-                    navController.navigate(Routes.DOCUMENTOS)
+                    abrirAreaProtegida(Routes.DOCUMENTOS)
                 },
+
                 onAbrirConsultas = {
-                    navController.navigate(Routes.CONSULTAS)
+                    abrirAreaProtegida(Routes.CONSULTAS)
                 },
+
                 onAbrirAvisos = {
                     navController.navigate(Routes.AVISOS)
                 },
+
                 onAbrirEmergencia = {
-                    navController.navigate(Routes.EMERGENCIA)
+                    abrirAreaProtegida(Routes.EMERGENCIA)
                 },
+
                 onAbrirConta = {
                     navController.navigate(Routes.CONTA)
                 }
@@ -93,19 +210,41 @@ fun AppNavigation() {
         }
 
         composable(Routes.CONSULTAS) {
-            ConsultasScreen(
-                onVoltarInicio = {
-                    navController.popBackStack()
+            if (prefs.estaLogado()) {
+                ConsultasScreen(
+                    onVoltarInicio = {
+                        navController.popBackStack()
+                    }
+                )
+            } else {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.HOME) {
+                            inclusive = false
+                        }
+                        launchSingleTop = true
+                    }
                 }
-            )
+            }
         }
 
         composable(Routes.DOCUMENTOS) {
-            DocumentosScreen(
-                onVoltarInicio = {
-                    navController.popBackStack()
+            if (prefs.estaLogado()) {
+                DocumentosScreen(
+                    onVoltarInicio = {
+                        navController.popBackStack()
+                    }
+                )
+            } else {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.HOME) {
+                            inclusive = false
+                        }
+                        launchSingleTop = true
+                    }
                 }
-            )
+            }
         }
 
         composable(Routes.AVISOS) {
@@ -122,12 +261,23 @@ fun AppNavigation() {
         }
 
         composable(Routes.EMERGENCIA) {
-            EmergenciaScreen(
-                viewModel = emergenciaViewModel,
-                onVoltarInicio = {
-                    navController.popBackStack()
+            if (prefs.estaLogado()) {
+                EmergenciaScreen(
+                    viewModel = emergenciaViewModel,
+                    onVoltarInicio = {
+                        navController.popBackStack()
+                    }
+                )
+            } else {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.HOME) {
+                            inclusive = false
+                        }
+                        launchSingleTop = true
+                    }
                 }
-            )
+            }
         }
 
         composable(Routes.CONTA) {
@@ -140,19 +290,27 @@ fun AppNavigation() {
                         launchSingleTop = true
                     }
                 },
+
                 onEntrar = {
-                    Toast.makeText(
-                        context,
-                        "Login estará disponível em breve.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    navController.navigate(Routes.LOGIN)
                 },
+
                 onCadastrar = {
-                    Toast.makeText(
-                        context,
-                        "Cadastro estará disponível em breve.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    navController.navigate(Routes.CADASTRO)
+                },
+
+                estaLogado = prefs.estaLogado(),
+                nomeUsuario = prefs.nomeUsuario(),
+
+                onSair = {
+                    prefs.sair()
+
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.HOME) {
+                            inclusive = false
+                        }
+                        launchSingleTop = true
+                    }
                 }
             )
         }

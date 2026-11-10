@@ -29,6 +29,7 @@ private data class IntroPage(
     val imagem: Int
 )
 
+
 @Composable
 fun IntroScreen(
     onFinish: () -> Unit,
@@ -58,153 +59,135 @@ fun IntroScreen(
 
     val pagina = paginas[paginaAtual]
 
-    Column(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
             .background(BemiColors.Bege)
-            .padding(
-                horizontal = 28.dp,
-                vertical = 32.dp
-            ),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val alturaDisponivel = maxHeight
 
-        // Indicador de progresso
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+        val tamanhoImagem = (alturaDisponivel * 0.32f)
+            .coerceIn(190.dp, 280.dp)
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    horizontal = 28.dp,
+                    vertical = 24.dp
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            repeat(3) { index ->
-                Box(
-                    modifier = Modifier
-                        .size(12.dp)
-                        .background(
-                            color = if (index == paginaAtual)
-                                BemiColors.VerdeEscuro
-                            else
-                                BemiColors.Dourado.copy(alpha = 0.5f),
-                            shape = CircleShape
-                        )
+
+            // Indicador de progresso
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                repeat(3) { index ->
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .background(
+                                color = if (index == paginaAtual)
+                                    BemiColors.VerdeEscuro
+                                else
+                                    BemiColors.Dourado.copy(alpha = 0.5f),
+                                shape = CircleShape
+                            )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = pagina.titulo,
+                fontSize = 27.sp,
+                fontWeight = FontWeight.Bold,
+                color = BemiColors.VerdeEscuro,
+                textAlign = TextAlign.Center,
+                lineHeight = 34.sp
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = pagina.descricao,
+                fontSize = 18.sp,
+                color = BemiColors.TextoPrincipal,
+                textAlign = TextAlign.Center,
+                lineHeight = 27.sp
+            )
+
+            Spacer(modifier = Modifier.weight(1f))
+
+
+            Box(
+                modifier = Modifier
+                    .size(tamanhoImagem)
+                    .background(
+                        color = BemiColors.VerdeClaro,
+                        shape = RoundedCornerShape(48.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = pagina.imagem),
+                    contentDescription = pagina.titulo,
+                    modifier = Modifier.size(tamanhoImagem * 1.6f),
+                    contentScale = ContentScale.Fit
                 )
             }
-        }
 
-        Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
-        // Título
-        Text(
-            text = pagina.titulo,
-            fontSize = 27.sp,
-            fontWeight = FontWeight.Bold,
-            color = BemiColors.VerdeEscuro,
-            textAlign = TextAlign.Center,
-            lineHeight = 34.sp
-        )
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Descrição
-        Text(
-            text = pagina.descricao,
-            fontSize = 18.sp,
-            color = BemiColors.TextoPrincipal,
-            textAlign = TextAlign.Center,
-            lineHeight = 27.sp
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Ilustração provisória
-        Box(
-            modifier = Modifier
-                .size(230.dp)
-                .background(
-                    color = BemiColors.VerdeClaro,
-                    shape = RoundedCornerShape(80.dp)
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Image(
-                painter = painterResource(id = pagina.imagem),
-                contentDescription = pagina.titulo,
+            Button(
+                onClick = {
+                    if (paginaAtual < 2) {
+                        paginaAtual++
+                    } else {
+                        onFinish()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(260.dp),
-                contentScale = ContentScale.Fit
-            )
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Botão principal
-        Button(
-            onClick = {
-                if (paginaAtual < 2) {
-                    paginaAtual++
-                } else {
-                    onFinish()
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(58.dp),
-            shape = RoundedCornerShape(30.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = BemiColors.VerdeEscuro
-            )
-        ) {
-            Text(
-                text = if (paginaAtual == 2)
-                    "Concluir"
-                else
-                    "Próximo  ›",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        if (paginaAtual < 2) {
-            TextButton(
-                onClick = onFinish,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
+                    .height(58.dp),
+                shape = RoundedCornerShape(30.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = BemiColors.VerdeEscuro
+                )
             ) {
                 Text(
-                    text = "Pular",
-                    fontSize = 17.sp,
-                    color = BemiColors.VerdeEscuro
+                    text = if (paginaAtual == 2)
+                        "Concluir"
+                    else
+                        "Próximo  ›",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
                 )
+            }
+
+            if (paginaAtual > 0) {
+                TextButton(
+                    onClick = {
+                        paginaAtual--
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                ) {
+                    Text(
+                        text = "‹ Voltar",
+                        fontSize = 17.sp,
+                        color = BemiColors.VerdeEscuro
+                    )
+                }
             }
         }
     }
 }
 
 
-@Preview(showBackground = true, name = "Introdução 1 - Bem-vinda")
-@Composable
-private fun IntroPreview1() {
-    IntroScreen(
-        onFinish = {},
-        initialPage = 0
-    )
-}
-
-@Preview(showBackground = true, name = "Introdução 2 - Lembretes")
-@Composable
-private fun IntroPreview2() {
-    IntroScreen(
-        onFinish = {},
-        initialPage = 1
-    )
-}
-
-@Preview(showBackground = true, name = "Introdução 3 - Segurança")
-@Composable
-private fun IntroPreview3() {
-    IntroScreen(
-        onFinish = {},
-        initialPage = 2
-    )
-}
 

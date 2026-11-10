@@ -1,4 +1,3 @@
-
 package br.com.isaconstance.bemi.ui.screens.home
 
 import androidx.compose.foundation.Image
@@ -42,7 +41,8 @@ fun HomeScreen(
     onAbrirConsultas: () -> Unit,
     onAbrirAvisos: () -> Unit,
     onAbrirEmergencia: () -> Unit,
-    onAbrirConta: () -> Unit
+    onAbrirConta: () -> Unit,
+    nomeUsuario: String? = null,
 ) {
     Scaffold(
         containerColor = BemiColors.Bege,
@@ -168,7 +168,11 @@ fun HomeScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Olá, Maria!",
+                            text = if (nomeUsuario.isNullOrBlank()){
+                                "Bem-vindo(a) ao BEMI!"
+                            } else{
+                                "Olá, $nomeUsuario!"
+                            },
                             fontSize = 25.sp,
                             fontWeight = FontWeight.Bold,
                             color = BemiColors.VerdeEscuro

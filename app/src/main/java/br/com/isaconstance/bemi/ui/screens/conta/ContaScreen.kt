@@ -28,7 +28,10 @@ import br.com.isaconstance.bemi.ui.theme.BemiColors
 fun ContaScreen(
     onVoltarInicio: () -> Unit,
     onEntrar: () -> Unit,
-    onCadastrar: () -> Unit
+    onCadastrar: () -> Unit,
+    estaLogado: Boolean,
+    nomeUsuario: String?,
+    onSair: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -37,7 +40,6 @@ fun ContaScreen(
             .statusBarsPadding()
             .padding(horizontal = 20.dp, vertical = 22.dp)
     ) {
-
         BemiHeader(
             titulo = "Minha conta",
             onVoltar = onVoltarInicio
@@ -77,7 +79,11 @@ fun ContaScreen(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Olá! Seja bem-vindo.",
+                            text = if (estaLogado) {
+                                "Olá, ${nomeUsuario ?: "usuário"}!"
+                            } else {
+                                "Olá! Seja bem-vindo."
+                            },
                             fontSize = 19.sp,
                             fontWeight = FontWeight.Bold,
                             color = BemiColors.VerdeEscuro
@@ -86,7 +92,11 @@ fun ContaScreen(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "Entre ou crie sua conta para personalizar o BEMI.",
+                            text = if (estaLogado) {
+                                "Sua conta está conectada ao BEMI."
+                            } else {
+                                "Entre ou crie sua conta para personalizar o BEMI."
+                            },
                             fontSize = 14.sp,
                             color = BemiColors.TextoSecundario,
                             lineHeight = 20.sp
@@ -96,38 +106,56 @@ fun ContaScreen(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                Button(
-                    onClick = onEntrar,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BemiColors.VerdeEscuro
-                    )
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Lock,
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Entrar na minha conta",
-                        fontSize = 16.sp
-                    )
-                }
+                if (estaLogado) {
+                    Button(
+                        onClick = onSair,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BemiColors.VerdeEscuro
+                        )
+                    ) {
+                        Text(
+                            text = "Sair da minha conta",
+                            fontSize = 16.sp
+                        )
+                    }
+                } else {
+                    Button(
+                        onClick = onEntrar,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = BemiColors.VerdeEscuro
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Lock,
+                            contentDescription = null
+                        )
 
-                OutlinedButton(
-                    onClick = onCadastrar,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    border = ButtonDefaults.outlinedButtonBorder,
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = BemiColors.VerdeEscuro
-                    )
-                ) {
-                    Text(
-                        text = "Criar uma conta",
-                        fontSize = 16.sp
-                    )
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = "Entrar na minha conta",
+                            fontSize = 16.sp
+                        )
+                    }
+
+                    OutlinedButton(
+                        onClick = onCadastrar,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        border = ButtonDefaults.outlinedButtonBorder,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = BemiColors.VerdeEscuro
+                        )
+                    ) {
+                        Text(
+                            text = "Criar uma conta",
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
         }
@@ -232,5 +260,3 @@ private fun OpcaoConta(
         }
     }
 }
-
-

@@ -5,9 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.isaconstance.bemi.data.local.database.AppDatabase
 import br.com.isaconstance.bemi.data.repository.ContatoRepository
+import br.com.isaconstance.bemi.domain.model.Contato
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class EmergenciaViewModel(context: Context) : ViewModel() {
@@ -19,7 +21,33 @@ class EmergenciaViewModel(context: Context) : ViewModel() {
     val uiState: StateFlow<EmergenciaUiState> = _uiState.asStateFlow()
 
     init {
-        observarContatos()
+        viewModelScope.launch {
+            inserirContatos()
+            observarContatos()
+        }
+    }
+
+    private suspend fun inserirContatos() {
+        val contatos = repository.listarContatos().first()
+
+        if (contatos.isEmpty()) {
+            repository.cadastrarContato(
+                Contato(
+                    nome = "Ana",
+                    telefone = "(11) 00000-0000",
+                    parentesco = "Filha",
+                    favorito = true
+                )
+            )
+
+            repository.cadastrarContato(
+                Contato(
+                    nome = "Carlos",
+                    telefone = "(11) 00000-0001",
+                    parentesco = "Filho"
+                )
+            )
+        }
     }
 
     private fun observarContatos() {

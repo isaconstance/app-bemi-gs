@@ -53,7 +53,7 @@ fun EmergenciaScreen(
             .padding(horizontal = 20.dp, vertical = 18.dp)
     ) {
         BemiHeader(
-            titulo = "Minha conta",
+            titulo = "Meus Contatos",
             onVoltar = onVoltarInicio
         )
 
