@@ -1,12 +1,12 @@
 package br.com.isaconstance.bemi.ui.screens.documentos
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.ErrorOutline
@@ -16,17 +16,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.isaconstance.bemi.R
 import br.com.isaconstance.bemi.domain.model.Documento
 import br.com.isaconstance.bemi.ui.components.BemiHeader
 import br.com.isaconstance.bemi.ui.components.BemiLoading
 import br.com.isaconstance.bemi.ui.theme.BemiColors
-import br.com.isaconstance.bemi.ui.theme.BemiTheme
 
 @Composable
 fun DocumentosScreen(
@@ -41,7 +42,6 @@ fun DocumentosScreen(
         onTentarNovamente = { viewModel.carregarDocumentos() }
     )
 }
-
 
 @Composable
 private fun DocumentosContent(
@@ -266,9 +266,13 @@ private fun DocumentosContent(
     }
 }
 
-
 @Composable
 private fun DocumentoCard(documento: Documento) {
+
+    var mostrarDocumento by remember(documento.id) {
+        mutableStateOf(false)
+    }
+
     val status = documento.status.trim().lowercase()
 
     val corStatus = when (status) {
@@ -285,15 +289,35 @@ private fun DocumentoCard(documento: Documento) {
         else -> Icons.Outlined.Description
     }
 
+    val imagemDocumento = when {
+        documento.tipo.contains("rg", ignoreCase = true) ||
+                documento.tipo.contains("identidade", ignoreCase = true) ->
+            R.drawable.documento_rg
+
+        documento.tipo.contains("sus", ignoreCase = true) ->
+            R.drawable.cartao_sus
+
+        documento.tipo.contains("resid", ignoreCase = true) ||
+                documento.tipo.contains("comprovante", ignoreCase = true) ->
+            R.drawable.residencia
+
+        else -> null
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
             containerColor = BemiColors.Branco
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 2.dp
+        )
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -307,17 +331,27 @@ private fun DocumentoCard(documento: Documento) {
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                Text(
-                    text = documento.tipo,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = BemiColors.TextoPrincipal,
+                Column(
                     modifier = Modifier.weight(1f)
-                )
+                ) {
+                    Text(
+                        text = documento.tipo,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = BemiColors.TextoPrincipal
+                    )
+
+                    Text(
+                        text = documento.validade?.let {
+                            "Validade: ${formatarData(it)}"
+                        } ?: "Validade não informada",
+                        fontSize = 13.sp,
+                        color = BemiColors.TextoSecundario
+                    )
+                }
 
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = iconeStatus,
@@ -326,35 +360,98 @@ private fun DocumentoCard(documento: Documento) {
                         modifier = Modifier.size(18.dp)
                     )
 
+                    Spacer(modifier = Modifier.width(4.dp))
+
                     Text(
                         text = documento.status,
-                        fontSize = 14.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = corStatus
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = documento.validade?.let {
-                    "Validade: ${formatarData(it)}"
-                } ?: "Validade: Não informada",
-                fontSize = 15.sp,
-                color = BemiColors.TextoSecundario
-            )
-
             documento.observacao?.let {
-                Spacer(modifier = Modifier.height(5.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = it,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     color = BemiColors.TextoSecundario
                 )
             }
+
+            if (imagemDocumento != null) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedButton(
+                    onClick = {
+                        mostrarDocumento = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = BemiColors.VerdeEscuro
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Description,
+                        contentDescription = null
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text("Ver documento")
+                }
+            }
         }
+    }
+
+    if (mostrarDocumento && imagemDocumento != null) {
+        AlertDialog(
+            onDismissRequest = {
+                mostrarDocumento = false
+            },
+            title = {
+                Text(
+                    text = documento.tipo,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column {
+                    Image(
+                        painter = painterResource(
+                            id = imagemDocumento
+                        ),
+                        contentDescription = "Imagem ilustrativa de ${documento.tipo}",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 350.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        contentScale = ContentScale.Fit
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Imagem ilustrativa para demonstração.",
+                        fontSize = 12.sp,
+                        color = BemiColors.TextoSecundario
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        mostrarDocumento = false
+                    }
+                ) {
+                    Text("Fechar")
+                }
+            },
+            containerColor = BemiColors.Branco
+        )
     }
 }
 
@@ -367,5 +464,3 @@ private fun formatarData(data: String): String {
         data
     }
 }
-
-
