@@ -1,6 +1,5 @@
 package br.com.isaconstance.bemi.data.remote
 
-import br.com.isaconstance.bemi.BuildConfig
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -17,7 +16,7 @@ object RetrofitClient {
                 .newBuilder()
                 .header(
                     "X-Access-Key",
-                    BuildConfig.JSONBIN_ACCESS_KEY
+                    ApiConfig.JSONBIN_ACCESS_KEY
                 )
                 .build()
 

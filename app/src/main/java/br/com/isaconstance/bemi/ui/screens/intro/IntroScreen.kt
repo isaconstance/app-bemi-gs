@@ -63,6 +63,8 @@ fun IntroScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(BemiColors.Bege)
+            .statusBarsPadding()
+            .navigationBarsPadding()
     ) {
         val alturaDisponivel = maxHeight
 

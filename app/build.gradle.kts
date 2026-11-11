@@ -6,18 +6,6 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-val localProperties = Properties()
-val localPropertiesFile = rootProject.file("local.properties")
-
-if (localPropertiesFile.exists()) {
-    localPropertiesFile.inputStream().use {
-        localProperties.load(it)
-    }
-}
-
-val jsonBinAccessKey =
-    localProperties.getProperty("JSONBIN_ACCESS_KEY", "")
-
 android {
     namespace = "br.com.isaconstance.bemi"
     compileSdk {
@@ -35,11 +23,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField(
-            "String",
-            "JSONBIN_ACCESS_KEY",
-            "\"$jsonBinAccessKey\""
-        )
     }
 
 
@@ -56,7 +39,6 @@ android {
     }
     buildFeatures {
         compose = true
-        buildConfig = true
     }
 }
 

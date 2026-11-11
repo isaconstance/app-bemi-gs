@@ -158,7 +158,11 @@ fun AppNavigation() {
         composable(Routes.LOGIN) {
             LoginScreen(
                 onVoltar = {
-                    navController.popBackStack()
+                    if (!navController.popBackStack()) {
+                        navController.navigate(Routes.ACESSO) {
+                            launchSingleTop = true
+                        }
+                    }
                 },
                 onEntrar = { email, senha ->
                     usuarioViewModel.entrar(email, senha)
@@ -172,7 +176,11 @@ fun AppNavigation() {
         composable(Routes.CADASTRO) {
             CadastroScreen(
                 onVoltar = {
-                    navController.popBackStack()
+                    if (!navController.popBackStack()) {
+                        navController.navigate(Routes.ACESSO) {
+                            launchSingleTop = true
+                        }
+                    }
                 },
                 onCadastrar = { nome, email, senha ->
                     usuarioViewModel.cadastrar(nome, email, senha)

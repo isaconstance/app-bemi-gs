@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.com.isaconstance.bemi.ui.components.BemiHeader
 import br.com.isaconstance.bemi.ui.theme.BemiColors
 
 @Composable
@@ -35,44 +36,20 @@ fun LoginScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(BemiColors.Bege)
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .verticalScroll(rememberScrollState())
             .imePadding()
             .padding(horizontal = 24.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onVoltar) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Voltar",
-                    tint = BemiColors.VerdeEscuro
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Text(
-            text = "BEMI",
-            fontSize = 38.sp,
-            fontWeight = FontWeight.Bold,
-            color = BemiColors.VerdeEscuro
+        BemiHeader(
+            titulo = "BEMI",
+            subtitulo = "Que bom ter você de volta!",
+            onVoltar = onVoltar
         )
 
         Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = "Que bom ter você de volta!",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = BemiColors.VerdeEscuro,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = "Entre na sua conta para acessar suas informações.",
@@ -80,6 +57,8 @@ fun LoginScreen(
             color = BemiColors.TextoSecundario,
             textAlign = TextAlign.Center
         )
+
+        Spacer(modifier = Modifier.height(36.dp))
 
         Spacer(modifier = Modifier.height(36.dp))
 

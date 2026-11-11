@@ -2,6 +2,7 @@ package br.com.isaconstance.bemi.ui.screens.cadastro
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.com.isaconstance.bemi.ui.components.BemiHeader
 import br.com.isaconstance.bemi.ui.theme.BemiColors
 
 @Composable
@@ -40,44 +42,20 @@ fun CadastroScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(BemiColors.Bege)
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .verticalScroll(rememberScrollState())
             .imePadding()
             .padding(horizontal = 24.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onVoltar) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Voltar",
-                    tint = BemiColors.VerdeEscuro
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = "BEMI",
-            fontSize = 38.sp,
-            fontWeight = FontWeight.Bold,
-            color = BemiColors.VerdeEscuro
+        BemiHeader(
+            titulo = "BEMI",
+            subtitulo = "Vamos criar sua conta?",
+            onVoltar = onVoltar
         )
 
         Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = "Vamos criar sua conta?",
-            fontSize = 25.sp,
-            fontWeight = FontWeight.Bold,
-            color = BemiColors.VerdeEscuro,
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
 
         Text(
             text = "Preencha seus dados para começar.",
