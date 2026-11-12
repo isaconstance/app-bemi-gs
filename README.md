@@ -99,6 +99,9 @@ O BEMI foi desenvolvido com uma organização em camadas, separando as responsab
 
 Essa estrutura permite separar a interface das regras e do acesso aos dados, tornando o projeto mais organizado e facilitando futuras alterações e implementações.
 
+## Link do Pitch
+https://drive.google.com/drive/folders/10cydE1Pr29piTpBhmMKePHgN6MqBHeef?usp=drive_link
+
 ## Desenvolvedoras
 - Isabella Constance Silva Gonçalves - 559219
 - Daniela Grego Pantaleão - 555808
